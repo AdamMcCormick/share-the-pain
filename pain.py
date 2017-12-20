@@ -1,6 +1,3 @@
-import sublime;
-from sublime_plugin import EventListener, TextCommand, WindowCommand
-
 from datetime import datetime
 import re
 import pyrebase
@@ -39,10 +36,11 @@ def getCurrentReason() :
   metadata = userData.get().val()
   return metadata['currentReason'] if metadata and 'currentReason' in metadata else None;
 
-def pushMessage(type, reason = False, date = datetime.now()) :
+def pushMessage(type, reason = False, isLearning = False, date = datetime.now()) :
   if type :
     message = {
       'reason': reason if bool(reason) else 'unknown',
+      'isLearning': isLearning,
       'type': type,
       'date': date.isoformat(),
     }
@@ -51,31 +49,15 @@ def pushMessage(type, reason = False, date = datetime.now()) :
     for i in [userMessages, allMessages] :
       i.push(message);
 
-def setReason(reason) :
+def setReason(reason, isLearning = False) :
   current = getCurrentReason()
   if current :
     pushMessage('DUN', current)
   getUserData().child('currentReason').set(reason)
-  pushMessage('MUX', reason)
+  pushMessage('MUX', reason, isLearning)
 
 def wtf(reason = getCurrentReason()) :
   pushMessage('WTF', reason)
 
 def yay(reason = getCurrentReason()) :
   pushMessage('YAY', reason)
-
-class Prompter(EventListener):
-  def onLoad(self, view):
-    pass
-
-class WtfCommand(TextCommand):
-  def run(self, view, args):
-    pass
-
-class YayCommand(TextCommand):
-  def run(self, view, args):
-    pass
-
-class MuxCommand(TextCommand):
-  def run(self, view, args):
-    pass
