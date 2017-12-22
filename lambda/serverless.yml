@@ -1,0 +1,63 @@
+
+service: shareThePain
+
+# You can pin your service to only deploy with a specific Serverless version
+# Check out our docs for more details
+# frameworkVersion: "=X.X.X"
+custom:
+  envname:
+    dev: int-sinclairstoryline 
+    int: int-sinclairstoryline
+    qa: arn:aws:execute-api:us-west-2:281941637822:ehygq3t549
+    stage: stage-sinclairstoryline
+    prod: arn:aws:execute-api:us-west-2:281941637822:9xuyd4i8m9
+    other: int-sinclairstoryline
+provider:
+  name: aws
+  runtime: python3.6
+
+# you can overwrite defaults here
+#  stage: dev
+  region: us-west-2
+  role: arn:aws:iam::281941637822:role/firebase-${opt:stage}-us-west-2-lambdaRole
+
+  include:
+    - pain_lambda.py
+    - deps/**
+  exclude:
+    - test/**
+
+functions:
+  adobe:
+    region: us-west-2
+    handler: pain_lambda.handleRequest
+    description: Basic API to record pain points
+    memorySize: 128
+    timeout: 30
+    environment:
+      stage: ${opt:stage}
+
+resources:
+ Resources:
+  Yay:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName: arn:aws:lambda:us-west-2:281941637822:function:pain-${opt:stage}
+      Principal: apigateway.amazonaws.com
+      SourceArn: ${self:custom.envname.${opt:stage}, self:custom.envname.other}/*/POST/yay
+  WTF:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName: arn:aws:lambda:us-west-2:281941637822:function:pain-${opt:stage}
+      Principal: apigateway.amazonaws.com
+      SourceArn: ${self:custom.envname.${opt:stage}, self:custom.envname.other}/*/POST/wtf
+  SetReason:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName: arn:aws:lambda:us-west-2:281941637822:function:pain-${opt:stage}
+      Principal: apigateway.amazonaws.com
+      SourceArn: ${self:custom.envname.${opt:stage}, self:custom.envname.other}/*/POST/mux
+
