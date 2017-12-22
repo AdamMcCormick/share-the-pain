@@ -1,7 +1,7 @@
 import sublime
 from sublime_plugin import EventListener, TextCommand, WindowCommand
 
-from pain import yay, wtf, setReason
+from .pain import yay, wtf, setReason
 
 class Prompter(EventListener):
   def onLoad(self, view):
@@ -13,6 +13,7 @@ class WtfCommand(TextCommand):
 
 class YayCommand(TextCommand):
   def run(self, view, args):
+
     pass
 
 class MuxCommand(TextCommand):
