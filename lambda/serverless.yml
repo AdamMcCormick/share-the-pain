@@ -6,11 +6,11 @@ service: shareThePain
 # frameworkVersion: "=X.X.X"
 custom:
   envname:
-    dev: int-sinclairstoryline 
+    dev: arn:aws:execute-api:us-west-2:281941637822:8f49q59z0c
     int: int-sinclairstoryline
-    qa: arn:aws:execute-api:us-west-2:281941637822:ehygq3t549
+    qa: qa-sinclairstoryline
     stage: stage-sinclairstoryline
-    prod: arn:aws:execute-api:us-west-2:281941637822:9xuyd4i8m9
+    prod: sinclairstoryline
     other: int-sinclairstoryline
 provider:
   name: aws
@@ -28,7 +28,7 @@ provider:
     - test/**
 
 functions:
-  adobe:
+  firebase:
     region: us-west-2
     handler: pain_lambda.handleRequest
     description: Basic API to record pain points
@@ -36,6 +36,12 @@ functions:
     timeout: 30
     environment:
       stage: ${opt:stage}
+      apiKey: 'AIzaSyAgJEKrEdc6Gv6Cwp3ANODIzymloPWJM_s'
+      authDomain: 'intense-fire-8265.firebaseapp.com'
+      databaseURL: 'https://intense-fire-8265.firebaseio.com'
+      projectId: 'intense-fire-8265'
+      storageBucket: 'intense-fire-8265.appspot.com'
+      messagingSenderId: '301339768416'
 
 resources:
  Resources:
@@ -43,21 +49,21 @@ resources:
     Type: AWS::Lambda::Permission
     Properties:
       Action: 'lambda:InvokeFunction'
-      FunctionName: arn:aws:lambda:us-west-2:281941637822:function:pain-${opt:stage}
+      FunctionName: arn:aws:lambda:us-west-2:281941637822:function:shareThePain-${opt:stage}-firebase
       Principal: apigateway.amazonaws.com
       SourceArn: ${self:custom.envname.${opt:stage}, self:custom.envname.other}/*/POST/yay
   WTF:
     Type: AWS::Lambda::Permission
     Properties:
       Action: 'lambda:InvokeFunction'
-      FunctionName: arn:aws:lambda:us-west-2:281941637822:function:pain-${opt:stage}
+      FunctionName: arn:aws:lambda:us-west-2:281941637822:function:shareThePain-${opt:stage}-firebase
       Principal: apigateway.amazonaws.com
       SourceArn: ${self:custom.envname.${opt:stage}, self:custom.envname.other}/*/POST/wtf
   SetReason:
     Type: AWS::Lambda::Permission
     Properties:
       Action: 'lambda:InvokeFunction'
-      FunctionName: arn:aws:lambda:us-west-2:281941637822:function:pain-${opt:stage}
+      FunctionName: arn:aws:lambda:us-west-2:281941637822:function:shareThePain-${opt:stage}-firebase
       Principal: apigateway.amazonaws.com
       SourceArn: ${self:custom.envname.${opt:stage}, self:custom.envname.other}/*/POST/mux
 
