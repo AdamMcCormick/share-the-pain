@@ -43,10 +43,12 @@ def pushMessage(user, type, reason = False, note = None, isLearning = False, dat
       'type': type,
       'date': (date if date else datetime.now()).isoformat()
     }
-    userMessages = resource('users/' + user['localId'] + '/pain');
-    allMessages = resource('pain');
-    for i in [userMessages, allMessages] :
-      i.push(message);
+    userMessages = resource('users/' + user['localId'] + '/pain')
+    userMessages.push(message)
+    allMessage = message.copy()
+    allMessage['user'] = user['localId']
+    allMessages = resource('pain')
+    allMessages.push(allMessage)
   return {
     "isBase64Encoded": False,
     "statusCode": 200,
