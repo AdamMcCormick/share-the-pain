@@ -1,18 +1,10 @@
 from datetime import datetime
 import json
 import re
+import os
 import pyrebase
 
-config = {
-  'apiKey': 'AIzaSyAgJEKrEdc6Gv6Cwp3ANODIzymloPWJM_s',
-  'authDomain': 'intense-fire-8265.firebaseapp.com',
-  'databaseURL': 'https://intense-fire-8265.firebaseio.com',
-  'projectId': 'intense-fire-8265',
-  'storageBucket': 'intense-fire-8265.appspot.com',
-  'messagingSenderId': '301339768416',
-}
-
-firebase = pyrebase.initialize_app(config)
+firebase = pyrebase.initialize_app(os.environ)
 
 auth = firebase.auth()
 
@@ -32,6 +24,16 @@ def getCurrentReason(user) :
   metadata = userData.get().val()
   return metadata['currentReason'] if metadata and 'currentReason' in metadata else None;
 
+def failure(typeVal, event) :
+  return lambda user, reason, note, isLearning: {
+    'isBase64Encoded': False,
+    'statusCode': 404,
+    'headers': {
+      'Content-Type': 'text/plain'
+    },
+    'body': 'Call failed, resource ' + typeVal + ' not found'
+  }
+
 def pushMessage(user, type, reason = False, note = None, isLearning = False, date = None) :
   if type :
     message = {
@@ -45,29 +47,38 @@ def pushMessage(user, type, reason = False, note = None, isLearning = False, dat
     allMessages = resource('pain');
     for i in [userMessages, allMessages] :
       i.push(message);
+  return {
+    "isBase64Encoded": False,
+    "statusCode": 200,
+    "headers": {},
+    "body": None
+  }
 
 def setReason(user, reason, note, isLearning = False) :
   current = getCurrentReason(user)
   if current :
     pushMessage(user, 'DUN', current, note, isLearning)
   getUserData(user).child('currentReason').set(reason)
-  pushMessage(user, 'MUX', reason, note, isLearning)
+  return pushMessage(user, 'MUX', reason, note, isLearning)
 
 def wtf(user, reason, note, isLearning) :
-  pushMessage(user, 'WTF', reason if reason else getCurrentReason(user), note)
+  return pushMessage(user, 'WTF', reason if reason else getCurrentReason(user), note)
 
 def yay(user, reason, note, isLearning) :
-  pushMessage(user, 'YAY', reason if reason else getCurrentReason(user), note)
+  return pushMessage(user, 'YAY', reason if reason else getCurrentReason(user), note)
 
 def handleRequest(event, context) :
   body = json.loads(event['body'])
   user = auth.sign_in_with_email_and_password(body['email'], body['password'])
-  typeVal = body.get('type', event['pathParameters']['proxy'])
+  typeVal = body.get('type', event['path'])
   return {
     'yay': yay,
+    '/yay': yay,
     'wtf': wtf,
-    'mux': setReason
-  }.get(typeVal.lower(), lambda x, y, z: x)(
+    '/wtf': wtf,
+    'mux': setReason,
+    '/mux': setReason
+  }.get(typeVal.lower(), failure(typeVal, event))(
     user,
     body.get('reason', None),
     body.get('note', None),
